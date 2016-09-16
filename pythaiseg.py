@@ -3,19 +3,22 @@ class WordSegmentation:
         self.trie = self.WordTrie(dict_path)
         pass
 
-    def segment(self, sentence):
+    def segment(self, text):
+        results = []
+        sentences = text.split(' ')
+        for sentence in sentences:
+            candidate_trie = self.exhaustive_matching(sentence)
+            sequences = self.serialize(candidate_trie)
 
-        candidate_trie = self.exhaustive_matching(sentence)
-        sequences = self.serialize(candidate_trie)
+            final_sequences = []
+            for sequence in sequences:
+                is_words = [self.trie.lookup(word) >= 2 for word in sequence]
+                complete = len(filter(lambda x: not x, is_words)) == 0
+                if complete:
+                    final_sequences.append(sequence)
+            results.append(final_sequences)
 
-        final_sequences = []
-        for sequence in sequences:
-            is_words = [self.trie.lookup(word) >= 2 for word in sequence]
-            complete = len(filter(lambda x: not x, is_words)) == 0
-            if complete:
-                final_sequences.append(sequence)
-
-        return final_sequences
+        return results
 
     def exhaustive_matching(self, chars):
 

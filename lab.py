@@ -1,8 +1,9 @@
 # coding=utf-8
 from pythaiseg import WordSegmentation
 
-sentence = u'ทดสอบตัดคำภาษาไทย'
+sentence = u'ทดสอบ ตัดคำ ภาษาไทย'
 ws = WordSegmentation()
-sequences = ws.segment(sentence)
-for sequence in sequences:
-    print('|'.join(sequence))
+sentences = ws.segment(sentence)
+for sequences in sentences:
+    for sequence in sequences:
+        print('|'.join(sequence))
