@@ -1,3 +1,6 @@
+import operator
+
+
 class WordSegmentation:
     def __init__(self, dict_path='data/dict.txt'):
         self.trie = self.WordTrie(dict_path)
@@ -68,6 +71,16 @@ class WordSegmentation:
             sequences = trie
 
         return sequences
+
+    @staticmethod
+    def maximal_matching(sentences):
+        output = []
+        for sequences in sentences:
+            token_counts = [len(sequence) for sequence in sequences]
+            min_index, min_value = min(enumerate(token_counts), key=operator.itemgetter(1))
+            min_token_sentence = sequences[min_index]
+            output.append(min_token_sentence)
+        return output
 
     class WordTrie:
         def __init__(self, dict_path='data/dict.txt'):
