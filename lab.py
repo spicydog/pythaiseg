@@ -1,9 +1,11 @@
 # coding=utf-8
+
 from pythaiseg import WordSegmentation
 
-sentence = u'ทดสอบ ตัดคำ ภาษาไทย'
+sentence = u'ทดสอบตัดคำภาษาไทย ตัดมานานมากละ ตัดไม่ได้ซะที'
 ws = WordSegmentation()
 sentences = ws.segment(sentence)
-for sequences in sentences:
-    for sequence in sequences:
-        print('|'.join(sequence))
+
+result = ws.maximal_matching(sentences)
+print '| |'.join(['|'.join(s) for s in result]) + '|'
+
