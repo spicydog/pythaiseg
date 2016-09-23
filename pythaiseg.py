@@ -1,6 +1,3 @@
-import operator
-
-
 class WordSegmentation:
     def __init__(self, dict_path='data/dict.txt'):
         self.trie = self.WordTrie(dict_path)
@@ -77,7 +74,7 @@ class WordSegmentation:
         output = []
         for sequences in sentences:
             token_counts = [len(sequence) for sequence in sequences]
-            min_index, min_value = min(enumerate(token_counts), key=operator.itemgetter(1))
+            min_index = token_counts.index(min(token_counts))
             min_token_sentence = sequences[min_index]
             output.append(min_token_sentence)
         return output
