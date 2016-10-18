@@ -7,18 +7,23 @@ class WordSegmentation:
         results = []
         sentences = text.split(' ')
         for sentence in sentences:
-            candidate_trie = self.exhaustive_matching(sentence)
-            sequences = self.serialize(candidate_trie)
-
-            final_sequences = []
-            for sequence in sequences:
-                is_words = [self.trie.lookup(word) >= 2 for word in sequence]
-                complete = len(filter(lambda x: not x, is_words)) == 0
-                if complete:
-                    final_sequences.append(sequence)
-            results.append(final_sequences)
+            results.append(self.segment_with_no_spaces(sentence))
 
         return results
+
+    def segment_with_no_spaces(self, text):
+        candidate_trie = self.exhaustive_matching(text)
+        sequences = self.serialize(candidate_trie)
+        # return sequences
+
+        final_sequences = []
+        for sequence in sequences:
+            is_words = [self.trie.lookup(word) >= 2 for word in sequence]
+            complete = len(filter(lambda x: not x, is_words)) == 0
+            if complete:
+                final_sequences.append(sequence)
+
+        return final_sequences
 
     def exhaustive_matching(self, chars):
 
