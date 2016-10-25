@@ -19,7 +19,7 @@ class WordSegmentation:
         final_sequences = []
         for sequence in sequences:
             is_words = [self.trie.lookup(word) >= 2 for word in sequence]
-            complete = len(filter(lambda x: not x, is_words)) == 0
+            complete = len([b for b in is_words if not b]) == 0
             if complete:
                 final_sequences.append(sequence)
 
