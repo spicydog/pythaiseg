@@ -27,8 +27,9 @@ class WordSegmentation:
 
         sequences = self.serialize(root_node)
 
-
-        print(sequences)
+        for sequence in sequences:
+            print([node.term for node in sequence])
+        # print(sequences)
         exit()
 
         # return sequences
@@ -90,16 +91,15 @@ class WordSegmentation:
     def serialize(self, node):
         sequences = []
         if len(node.children) > 0:
-            for term, next_trie in node.children.items():
-                next_sequences = self.serialize(next_trie)
-                if len(next_sequences) == 0:
-                    sequences.append([term])
+            for term, next_node in node.children.items():
+                if len(next_node.children) > 0:
+                    child_sequences = self.serialize(next_node)
+                    for child_sequence in child_sequences:
+                        sequences.append([next_node] + child_sequence)
                 else:
-                    for next_sequence in next_sequences:
-                        sequences.append([term] + next_sequence)
-
+                    sequences.append([next_node])
         else:
-            sequences = [[node.term]]
+            sequences.append([node])
 
         return sequences
 
