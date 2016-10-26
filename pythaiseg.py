@@ -1,4 +1,14 @@
 class WordSegmentation:
+
+    class Node:
+        def __init__(self, term, type):
+            self.term = term
+            self.type = type
+            self.children = {}
+
+        def add_child(self, node):
+            self.children[node.term] = node
+
     def __init__(self, dict_path='data/dict.txt'):
         self.trie = self.WordTrie(dict_path)
         pass
@@ -12,65 +22,84 @@ class WordSegmentation:
         return results
 
     def segment_with_no_spaces(self, text):
-        candidate_trie = self.exhaustive_matching(text)
-        sequences = self.serialize(candidate_trie)
+        root_node = self.Node("", -1)
+        root_node.children = self.exhaustive_matching(text)
+
+        sequences = self.serialize(root_node)
+
+
+        print(sequences)
+        exit()
+
         # return sequences
 
         final_sequences = []
         for sequence in sequences:
-            is_words = [self.trie.lookup(word) >= 2 for word in sequence]
-            complete = len([b for b in is_words if not b]) == 0
-            if complete:
+            # is_words = [self.trie.lookup(word) >= 2 for word in sequence]
+            # complete = len([b for b in is_words if not b]) == 0
+            # if complete:
                 final_sequences.append(sequence)
 
         return final_sequences
 
     def exhaustive_matching(self, chars):
-
-        results = {}
+        nodes = {}
         working_chars = ''
         future_chars = chars
 
         for char in chars:
             working_chars += char
+
             future_chars = future_chars[1:]
             lookup_result = self.trie.lookup(working_chars)
             if lookup_result == 0:
-                # This is not a word, move back
-                results[working_chars] = self.exhaustive_matching(future_chars)
+                # This is not a word, move back if not the beginning ot just add this char
+                if len(working_chars) != 1:
+                    future_chars = char + future_chars
+                    working_chars = working_chars[0:-1]
+                if len(working_chars) > 0:
+                    node = self.Node(working_chars, lookup_result)
+                    nodes[working_chars] = node
+                    node.children = self.exhaustive_matching(future_chars)
                 break
 
             elif lookup_result == 1:
                 # This is a part of words
                 if len(future_chars) == 0:
                     # If it is the end of the string, simply add as a word
-                    results[working_chars] = {}
+                    node = self.Node(working_chars, lookup_result)
+                    nodes[working_chars] = node
                 pass
 
             elif lookup_result == 2:
                 # This is the end and not part of words, set word
-                results[working_chars] = self.exhaustive_matching(future_chars)
+                node = self.Node(working_chars, lookup_result)
+                nodes[working_chars] = node
+                node.children = self.exhaustive_matching(future_chars)
                 break
 
             elif lookup_result == 3:
                 # This is the end but part of words, mark location and go on
-                results[working_chars] = self.exhaustive_matching(future_chars)
+                node = self.Node(working_chars, lookup_result)
+                nodes[working_chars] = node
+                node.children = self.exhaustive_matching(future_chars)
                 pass
 
-        return results
+        return nodes
 
-    def serialize(self, trie):
+    def serialize(self, node):
         sequences = []
-        if len(trie) > 0:
-            for word, next_trie in trie.items():
+        if len(node.children) > 0:
+            for term, next_trie in node.children.items():
                 next_sequences = self.serialize(next_trie)
                 if len(next_sequences) == 0:
-                    sequences.append([word])
+                    sequences.append([term])
                 else:
                     for next_sequence in next_sequences:
-                        sequences.append([word] + next_sequence)
+                        sequences.append([term] + next_sequence)
+
         else:
-            sequences = trie
+            sequences = [[node.term]]
 
         return sequences
 
