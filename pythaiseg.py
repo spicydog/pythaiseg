@@ -24,13 +24,6 @@ class WordSegmentation:
 
         sequences = root_node.serialize()
 
-        for sequence in sequences:
-            print([node.term for node in sequence])
-        # print(sequences)
-        exit()
-
-        # return sequences
-
         final_sequences = []
         for sequence in sequences:
             # is_words = [self.trie.lookup(word) >= 2 for word in sequence]

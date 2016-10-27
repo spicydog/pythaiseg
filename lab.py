@@ -1,11 +1,12 @@
 # coding=utf-8
-
+#
 from pythaiseg import WordSegmentation
 
-sentence = u'ทดสอบตัดคำภาษาไทย ตัดมานานมากละ ตัดไม่ได้ซะที'
+sentence = u'ตัดคำงงงงภาษาไทย'
 ws = WordSegmentation()
 sentences = ws.segment(sentence)
 
-result = ws.maximal_matching(sentences)
-print '| |'.join(['|'.join(s) for s in result]) + '|'
-
+for sentences in sentences:
+    for sequence in sentences:
+        print('|'.join([node.term for node in sequence]))
+    print('#' * 16)
