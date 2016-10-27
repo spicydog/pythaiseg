@@ -43,14 +43,14 @@ class WordSegmentation:
 
             future_chars = future_chars[1:]
             lookup_result = self.trie.lookup(working_chars)
-            if lookup_result == TYPE_UNKNOWN_WORD:
 
-                # This is not a word, move back if not the beginning ot just add this char
+            if lookup_result == TYPE_UNKNOWN_WORD:
+                # This is not a word, move back if not the beginning or just add this char
                 if len(working_chars) != 1:
                     future_chars = char + future_chars
                     working_chars = working_chars[0:-1]
                 if len(working_chars) > 0:
-                    node = self.Node(working_chars, lookup_result)
+                    node = self.Node(working_chars, self.trie.lookup(working_chars))
                     nodes[working_chars] = node
                     node.children = self.exhaustive_matching(future_chars)
                 break
