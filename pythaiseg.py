@@ -9,6 +9,21 @@ class WordSegmentation:
         def add_child(self, node):
             self.children[node.term] = node
 
+        def serialize(self):
+            sequences = []
+            if len(self.children) > 0:
+                for term, next_node in self.children.items():
+                    if len(next_node.children) > 0:
+                        child_sequences = next_node.serialize()
+                        for child_sequence in child_sequences:
+                            sequences.append([next_node] + child_sequence)
+                    else:
+                        sequences.append([next_node])
+            else:
+                sequences.append([self])
+
+            return sequences
+
     def __init__(self, dict_path='data/dict.txt'):
         self.trie = self.WordTrie(dict_path)
         pass
@@ -25,7 +40,7 @@ class WordSegmentation:
         root_node = self.Node("", -1)
         root_node.children = self.exhaustive_matching(text)
 
-        sequences = self.serialize(root_node)
+        sequences = root_node.serialize()
 
         for sequence in sequences:
             print([node.term for node in sequence])
@@ -87,21 +102,6 @@ class WordSegmentation:
                 pass
 
         return nodes
-
-    def serialize(self, node):
-        sequences = []
-        if len(node.children) > 0:
-            for term, next_node in node.children.items():
-                if len(next_node.children) > 0:
-                    child_sequences = self.serialize(next_node)
-                    for child_sequence in child_sequences:
-                        sequences.append([next_node] + child_sequence)
-                else:
-                    sequences.append([next_node])
-        else:
-            sequences.append([node])
-
-        return sequences
 
     @staticmethod
     def maximal_matching(sentences):
