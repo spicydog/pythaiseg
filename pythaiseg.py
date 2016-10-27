@@ -10,16 +10,22 @@ class WordSegmentation:
             self.children[node.term] = node
 
         def serialize(self):
+            # Create new sequences
             sequences = []
             if len(self.children) > 0:
+                # If child nodes exist, perform sequence merging of each child nodes
                 for term, next_node in self.children.items():
                     if len(next_node.children) > 0:
+                        # If the child node also have children, go recursively extract it
                         child_sequences = next_node.serialize()
                         for child_sequence in child_sequences:
+                            # Append each sequence to the array
                             sequences.append([next_node] + child_sequence)
                     else:
+                        # The child node is a leaf node, simply add to sequence
                         sequences.append([next_node])
             else:
+                # If leaf node, just return it self, it must be an array for merging purpose
                 sequences.append([self])
 
             return sequences
