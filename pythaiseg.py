@@ -1,8 +1,8 @@
 TYPE_ROOT_NODE = -1
 TYPE_UNKNOWN_WORD = 0
 TYPE_WORD_BEGINNING = 1
-TYPE_WORD_END = 2
-TYPE_WORD_CONTINUE = 3
+TYPE_WORD_CONTINUE = 2
+TYPE_WORD_END = 3
 
 
 class WordSegmentation:
@@ -22,14 +22,18 @@ class WordSegmentation:
         root_node = self.Node("", TYPE_ROOT_NODE)
         root_node.children = self.exhaustive_matching(text)
 
-        sequences = root_node.serialize()
+        sequences = self.serialize(root_node)
+
+        scores = []
+        for sequence in sequences:
+            s = [node.type for node in sequence]
+            avg = sum(s)/len(s)
+            scores.append(avg)
 
         final_sequences = []
-        for sequence in sequences:
-            # is_words = [self.trie.lookup(word) >= 2 for word in sequence]
-            # complete = len([b for b in is_words if not b]) == 0
-            # if complete:
-            final_sequences.append(sequence)
+        sorted_indexes = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+        for sorted_index in sorted_indexes:
+            final_sequences.append(sequences[sorted_index])
 
         return final_sequences
 
@@ -79,6 +83,45 @@ class WordSegmentation:
 
         return nodes
 
+    def serialize(self, node):
+        # Create new sequences
+        sequences = []
+        if len(node.children) > 0:
+            # If child nodes exist, perform sequence merging of each child nodes
+            word_found = False
+            for term, next_node in node.children.items():
+                if next_node.is_word():
+                    word_found = True
+
+            for term, next_node in node.children.items():
+                if word_found:
+                    # If these children have at least one word, Ignore bad kids
+                    if not next_node.is_word():
+                        continue
+                else:
+                    # If this node is not a word, then try to merge to the next node
+                    # if the merge becomes word, this means other branch got it, just ignore
+                    if not node.is_word():
+                        work_type = self.trie.lookup(node.term + term)
+                        if work_type == TYPE_WORD_CONTINUE or work_type == TYPE_WORD_CONTINUE:
+                            continue
+
+                if len(next_node.children) > 0:
+                    # If the child node also have children, go recursively extract it
+                    child_sequences = self.serialize(next_node)
+                    for child_sequence in child_sequences:
+                        # Append each sequence to the array
+                        sequences.append([next_node] + child_sequence)
+                else:
+                    # The child node is a leaf node, simply add to sequence
+                    sequences.append([next_node])
+
+        else:
+            # If leaf node, just return it self, it must be an array for merging purpose
+            sequences.append([self])
+
+        return sequences
+
     @staticmethod
     def maximal_matching(sentences):
         output = []
@@ -100,41 +143,6 @@ class WordSegmentation:
 
         def is_word(self):
             return self.type == TYPE_WORD_END or self.type == TYPE_WORD_CONTINUE
-
-        def serialize(self):
-            # Create new sequences
-            sequences = []
-            if len(self.children) > 0:
-                # If child nodes exist, perform sequence merging of each child nodes
-
-                word_found = False
-                for term, next_node in self.children.items():
-                    if next_node.is_word():
-                        word_found = True
-
-                for term, next_node in self.children.items():
-
-                    if word_found:
-                        if not next_node.is_word():
-                            continue
-                    else:
-                        print([self.term,term])
-
-                    if len(next_node.children) > 0:
-                        # If the child node also have children, go recursively extract it
-                        child_sequences = next_node.serialize()
-                        for child_sequence in child_sequences:
-                            # Append each sequence to the array
-                            sequences.append([next_node] + child_sequence)
-                    else:
-                        # The child node is a leaf node, simply add to sequence
-                        sequences.append([next_node])
-
-            else:
-                # If leaf node, just return it self, it must be an array for merging purpose
-                sequences.append([self])
-
-            return sequences
 
     class WordTrie:
         def __init__(self, dict_path='data/dict.txt'):
@@ -173,10 +181,10 @@ class WordSegmentation:
             if '|' in p:
                 # this is a word
                 if len(p) == 1:
-                    # this is the end of the word and not for another word (2)
+                    # this is the end of the word and not for another word (3)
                     return TYPE_WORD_END
                 else:
-                    # can also be beginning of another word (1+2 = 3)
+                    # can also be beginning of another word (2)
                     return TYPE_WORD_CONTINUE
             else:
                 # this maybe a beginning of words (1)
